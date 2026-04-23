@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="card panel">
+  <div class="eyebrow">开发辅助页</div>
+  <h1>最近验证码记录</h1>
+  <p class="muted">仅在开发模式下开放，用于本地确认邮箱 / 手机验证码链路是否跑通。生产部署请关闭 DEV_SHOW_CODES。</p>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead><tr><th>目标</th><th>类型</th><th>用途</th><th>状态</th><th>创建时间</th><th>已使用</th></tr></thead>
+      <tbody>
+        {% for code in codes %}
+        <tr>
+          <td>{{ code.target }}</td>
+          <td>{{ code.target_type }}</td>
+          <td>{{ code.purpose }}</td>
+          <td>{{ code.delivery_status }}</td>
+          <td>{{ code.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+          <td>{{ '是' if code.used_at else '否' }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" class="muted">暂无验证码记录。</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

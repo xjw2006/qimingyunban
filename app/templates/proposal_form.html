@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="card panel">
+  <div class="eyebrow">{{ page_title }}</div>
+  <h1>{{ page_title }}</h1>
+  <p class="muted">请尽量把用户痛点、解决方案、市场与商业模式写清楚。系统会据此生成章节、导出文件，并按加分制解释每一分的来源。</p>
+  <form method="post" action="{% if proposal %}/proposals/{{ proposal.id }}/edit{% else %}/proposals/new{% endif %}" class="form-grid">
+    <label>项目名称
+      <input type="text" name="title" value="{{ proposal.title if proposal else '' }}" placeholder="例如：蓝鲸校园轻食连锁计划" required>
+    </label>
+    <label>所属行业
+      <input type="text" name="industry" value="{{ proposal.industry if proposal else '' }}" placeholder="例如：消费零售 / 教育科技 / 医疗健康" required>
+    </label>
+    <label class="full-row">用户痛点
+      <textarea name="problem" rows="4" placeholder="请描述用户在什么场景下遇到什么问题，问题为什么重要，现有方案有什么缺陷。" required>{{ proposal.problem if proposal else '' }}</textarea>
+    </label>
+    <label class="full-row">解决方案
+      <textarea name="solution" rows="4" placeholder="请写清你准备如何解决问题，产品或服务由哪些关键环节构成，差异化在哪。" required>{{ proposal.solution if proposal else '' }}</textarea>
+    </label>
+    <label class="full-row">市场空间与用户画像
+      <textarea name="market" rows="4" placeholder="请说明目标用户、首批场景、市场空间、渠道切入与竞争环境。" required>{{ proposal.market if proposal else '' }}</textarea>
+    </label>
+    <label class="full-row">商业模式与增长方式
+      <textarea name="business_model" rows="4" placeholder="请说明如何赚钱、如何增长、核心经营指标有哪些。" required>{{ proposal.business_model if proposal else '' }}</textarea>
+    </label>
+    <div class="full-row action-row">
+      <button class="btn btn-primary" type="submit">生成策划案并计算评分</button>
+      <a class="btn btn-ghost" href="/dashboard">返回工作台</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

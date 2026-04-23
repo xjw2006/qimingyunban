@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="detail-header card panel">
+  <div>
+    <div class="eyebrow">策划案详情</div>
+    <h1>{{ proposal.title }}</h1>
+    <p class="muted">{{ proposal.generated.summary }}</p>
+  </div>
+  <div class="detail-actions">
+    <a class="btn btn-secondary" href="/proposals/{{ proposal.id }}/export/docx">导出 DOCX</a>
+    <a class="btn btn-primary" href="/proposals/{{ proposal.id }}/export/pptx">导出 PPTX</a>
+    {% if owner_can_edit %}
+      <a class="btn btn-ghost" href="/proposals/{{ proposal.id }}/edit">编辑</a>
+      <form method="post" action="/proposals/{{ proposal.id }}/delete" onsubmit="return confirm('确认删除这份策划案吗？');">
+        <button class="btn btn-danger" type="submit">删除</button>
+      </form>
+    {% endif %}
+  </div>
+</section>
+
+<section class="metrics-grid three">
+  {% for card in proposal.generated.metric_cards %}
+    <div class="metric-card">
+      <div class="metric-label">{{ card.label }}</div>
+      <div class="metric-value">{{ card.value }}</div>
+      <div class="metric-note">{{ card.note }}</div>
+    </div>
+  {% endfor %}
+</section>
+
+<section class="card panel">
+  <div class="panel-header">
+    <h2>加分制评分拆解</h2>
+    <div class="score-pill">总分 {{ proposal.score.total }} / {{ proposal.score.max_total }} · 评级 {{ proposal.score.grade }}</div>
+  </div>
+  <p class="muted">{{ proposal.score.summary }}</p>
+  <div class="score-grid">
+    {% for dimension in proposal.score.dimensions %}
+      <article class="score-card">
+        <div class="score-card-head">
+          <h3>{{ dimension.label }}</h3>
+          <div class="score-mini">{{ dimension.score }}/{{ dimension.max }}</div>
+        </div>
+        <p class="muted small">{{ dimension.comment }}</p>
+        <div class="criterion-list">
+          {% for item in dimension.criteria %}
+            <details class="criterion {% if item.passed %}criterion-pass{% else %}criterion-fail{% endif %}" {% if loop.first %}open{% endif %}>
+              <summary>
+                <span>{{ item.name }}</span>
+                <strong>+{{ item.earned }} / {{ item.points }}</strong>
+              </summary>
+              <div class="criterion-body">
+                <div><span class="muted">证据：</span>{{ item.evidence }}</div>
+                <div><span class="muted">如何加分：</span>{{ item.how_to_gain }}</div>
+              </div>
+            </details>
+          {% endfor %}
+        </div>
+      </article>
+    {% endfor %}
+  </div>
+  <div class="helper-box">
+    <strong>建议优先补强：</strong>
+    <ul>
+      {% for action in proposal.score.priority_actions %}
+        <li>{{ action }}</li>
+      {% else %}
+        <li>当前维度较均衡，可继续增加实证数据与案例页。</li>
+      {% endfor %}
+    </ul>
+  </div>
+</section>
+
+<section class="section-grid two">
+  {% for section in proposal.generated.sections %}
+    <article class="card section-card">
+      <div class="eyebrow">{{ section.subtitle }}</div>
+      <h2>{{ section.title }}</h2>
+      <ul class="bullet-list">
+        {% for bullet in section.bullets %}
+          <li>{{ bullet }}</li>
+        {% endfor %}
+      </ul>
+      <p>{{ section.narrative }}</p>
+      <div class="chart-placeholder">图表占位：{{ section.chart_placeholder }}</div>
+    </article>
+  {% endfor %}
+</section>
+
+<section class="section-grid three">
+  <div class="card panel">
+    <h3>评委关注点</h3>
+    <ul class="bullet-list">
+      {% for item in proposal.generated.judge_focus %}
+        <li>{{ item }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  <div class="card panel">
+    <h3>增长路线图</h3>
+    <ul class="bullet-list">
+      {% for item in proposal.generated.growth_roadmap %}
+        <li>{{ item }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  <div class="card panel">
+    <h3>主要风险</h3>
+    <ul class="bullet-list">
+      {% for item in proposal.generated.risks %}
+        <li>{{ item }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+</section>
+{% endblock %}

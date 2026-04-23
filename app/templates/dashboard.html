@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="dashboard-top">
+  <div>
+    <div class="eyebrow">策划案工作台</div>
+    <h1>我的商业策划案</h1>
+    <p class="muted">这一版支持新增、编辑、删除、DOCX 导出、PPTX 导出，以及更细的加分制评分说明。</p>
+  </div>
+  <a class="btn btn-primary" href="/proposals/new">新建策划案</a>
+</section>
+
+<section class="proposal-grid">
+  {% for proposal in proposals %}
+    <article class="card proposal-card">
+      <div class="proposal-meta">
+        <span class="tag">{{ proposal.industry }}</span>
+        <span class="tag tag-soft">评级 {{ proposal.score.grade }}</span>
+      </div>
+      <h3>{{ proposal.title }}</h3>
+      <p>{{ proposal.generated.summary }}</p>
+      <div class="score-strip">
+        <div class="score-number">{{ proposal.score.total }}</div>
+        <div class="score-detail">总分 / {{ proposal.score.max_total }}</div>
+      </div>
+      <div class="small-score-list">
+        {% for item in proposal.score.dimensions[:4] %}
+          <div class="small-score-item"><span>{{ item.label }}</span><strong>{{ item.score }}/{{ item.max }}</strong></div>
+        {% endfor %}
+      </div>
+      <div class="action-row">
+        <a class="btn btn-secondary" href="/proposals/{{ proposal.id }}">查看详情</a>
+        <a class="btn btn-ghost" href="/proposals/{{ proposal.id }}/edit">编辑</a>
+      </div>
+    </article>
+  {% else %}
+    <div class="card empty-state">
+      <h3>还没有策划案</h3>
+      <p>先创建第一份策划案，你就能看到评分拆解与新版 PPT 模板效果。</p>
+      <a class="btn btn-primary" href="/proposals/new">立即创建</a>
+    </div>
+  {% endfor %}
+</section>
+{% endblock %}

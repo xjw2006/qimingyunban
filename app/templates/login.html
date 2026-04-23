@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="auth-shell two-col-equal">
+  <section class="card panel">
+    <div class="eyebrow">密码登录</div>
+    <h2>使用邮箱或手机号登录</h2>
+    <form method="post" action="/login" class="form-grid">
+      <label>邮箱或手机号
+        <input type="text" name="account" placeholder="demo@启明云伴.app 或 13800000000" required>
+      </label>
+      <label>密码
+        <input type="password" name="password" placeholder="请输入密码" required>
+      </label>
+      <button class="btn btn-primary" type="submit">登录</button>
+    </form>
+    <div class="helper-box">
+      <div>默认演示用户：demo@启明云伴.app / demo1234</div>
+      <div>默认管理员：admin@启明云伴.app / admin1234</div>
+    </div>
+  </section>
+
+  <section class="card panel">
+    <div class="eyebrow">验证码登录</div>
+    <h2>邮箱或手机验证码登录</h2>
+    <form id="login-code-send-form" class="form-grid compact-grid">
+      <label>邮箱或手机号
+        <input type="text" name="target" id="loginTarget" placeholder="输入已注册邮箱或手机号" required>
+      </label>
+      <button class="btn btn-secondary" type="button" id="sendLoginCodeBtn">发送登录验证码</button>
+      <div id="loginCodeResult" class="inline-result"></div>
+    </form>
+    <form method="post" action="/login/code" class="form-grid">
+      <label>邮箱或手机号
+        <input type="text" name="target" placeholder="再次输入用于登录" required>
+      </label>
+      <label>验证码
+        <input type="text" name="code" placeholder="6 位验证码" required>
+      </label>
+      <button class="btn btn-primary" type="submit">验证码登录</button>
+    </form>
+    <p class="muted">开发环境下会直接显示验证码，方便本地验证流程是否跑通。</p>
+  </section>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+setupCodeSender({
+  buttonId: 'sendLoginCodeBtn',
+  resultId: 'loginCodeResult',
+  buildFormData: () => {
+    const target = document.getElementById('loginTarget').value.trim();
+    const fd = new FormData();
+    fd.append('purpose', 'login');
+    if (target.includes('@')) {
+      fd.append('email', target);
+      return { url: '/api/auth/send-email-code', formData: fd };
+    }
+    fd.append('phone', target);
+    return { url: '/api/auth/send-phone-code', formData: fd };
+  }
+});
+</script>
+{% endblock %}

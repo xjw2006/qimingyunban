@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="dashboard-top">
+  <div>
+    <div class="eyebrow">论坛治理后台</div>
+    <h1>管理员面板</h1>
+    <p class="muted">这里可以查看举报、隐藏帖子与评论、维护敏感词和黑名单，并对用户执行封禁或解封。</p>
+  </div>
+</section>
+
+<section class="metrics-grid four">
+  <div class="metric-card"><div class="metric-label">待处理举报</div><div class="metric-value small">{{ report_summary.get('pending', 0) }}</div></div>
+  <div class="metric-card"><div class="metric-label">已处理举报</div><div class="metric-value small">{{ report_summary.get('resolved', 0) }}</div></div>
+  <div class="metric-card"><div class="metric-label">封禁用户</div><div class="metric-value small">{{ users | selectattr('is_banned') | list | length }}</div></div>
+  <div class="metric-card"><div class="metric-label">敏感词条目</div><div class="metric-value small">{{ words|length }}</div></div>
+</section>
+
+<section class="section-grid two">
+  <div class="card panel">
+    <div class="panel-header"><h2>举报队列</h2></div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th>ID</th><th>对象</th><th>原因</th><th>状态</th><th>操作</th></tr></thead>
+        <tbody>
+        {% for report in reports %}
+          <tr>
+            <td>{{ report.id }}</td>
+            <td>{{ report.target_type }} #{{ report.target_id }}</td>
+            <td>{{ report.reason }}</td>
+            <td>{{ report.status }}</td>
+            <td>
+              <form method="post" action="/admin/reports/{{ report.id }}/mark" class="inline-mini-form">
+                <input type="hidden" name="status_value" value="resolved">
+                <button class="btn btn-ghost" type="submit">标记已处理</button>
+              </form>
+            </td>
+          </tr>
+        {% else %}
+          <tr><td colspan="5" class="muted">暂无举报记录。</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card panel">
+    <div class="panel-header"><h2>敏感词维护</h2></div>
+    <form method="post" action="/admin/sensitive" class="form-grid compact-grid">
+      <input type="text" name="word" placeholder="敏感词" required>
+      <select name="level">
+        <option value="reject">直接拦截</option>
+        <option value="replace">自动替换</option>
+      </select>
+      <input type="text" name="replacement" placeholder="替换词，默认 ***" value="***">
+      <button class="btn btn-primary" type="submit">新增敏感词</button>
+    </form>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th>词条</th><th>策略</th><th>替换值</th><th>操作</th></tr></thead>
+        <tbody>
+          {% for item in words %}
+          <tr>
+            <td>{{ item.word }}</td>
+            <td>{{ item.level }}</td>
+            <td>{{ item.replacement }}</td>
+            <td>
+              <form method="post" action="/admin/sensitive/{{ item.id }}/delete">
+                <button class="btn btn-danger" type="submit">删除</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="section-grid two">
+  <div class="card panel">
+    <div class="panel-header"><h2>黑名单</h2></div>
+    <form method="post" action="/admin/blacklist" class="form-grid compact-grid">
+      <select name="entry_type">
+        <option value="email">邮箱</option>
+        <option value="phone">手机号</option>
+        <option value="username">昵称</option>
+        <option value="keyword">关键字</option>
+      </select>
+      <input type="text" name="value" placeholder="黑名单值" required>
+      <input type="text" name="note" placeholder="备注">
+      <button class="btn btn-primary" type="submit">新增黑名单</button>
+    </form>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th>类型</th><th>值</th><th>状态</th><th>备注</th><th>操作</th></tr></thead>
+        <tbody>
+          {% for item in blacklist %}
+          <tr>
+            <td>{{ item.entry_type }}</td>
+            <td>{{ item.value }}</td>
+            <td>{{ '启用' if item.active else '停用' }}</td>
+            <td>{{ item.note or '-' }}</td>
+            <td>
+              <form method="post" action="/admin/blacklist/{{ item.id }}/toggle">
+                <button class="btn btn-ghost" type="submit">{{ '停用' if item.active else '启用' }}</button>
+              </form>
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="5" class="muted">暂无黑名单。</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card panel">
+    <div class="panel-header"><h2>用户封禁</h2></div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th>用户</th><th>邮箱</th><th>手机</th><th>状态</th><th>操作</th></tr></thead>
+        <tbody>
+          {% for user in users %}
+          <tr>
+            <td>{{ user.full_name }}{% if user.is_admin %}（管理员）{% endif %}</td>
+            <td>{{ user.email }}</td>
+            <td>{{ user.phone }}</td>
+            <td>{{ '封禁中' if user.is_banned else '正常' }}</td>
+            <td>
+              {% if not user.is_admin %}
+              <form method="post" action="/admin/users/{{ user.id }}/toggle-ban" class="inline-mini-form">
+                <input type="text" name="reason" placeholder="封禁原因" value="多次违规发言">
+                <button class="btn {% if user.is_banned %}btn-secondary{% else %}btn-danger{% endif %}" type="submit">{{ '解封' if user.is_banned else '封禁' }}</button>
+              </form>
+              {% else %}
+              <span class="muted">不可操作</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="card panel">
+  <div class="panel-header"><h2>帖子与评论治理</h2></div>
+  {% for post in posts %}
+    <article class="forum-admin-card">
+      <div class="forum-admin-head">
+        <div>
+          <h3>{{ post.title }}</h3>
+          <div class="muted small">作者：{{ post.author.full_name }} · {{ post.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+          {% if post.is_hidden %}<span class="tag tag-danger">已隐藏：{{ post.hidden_reason }}</span>{% endif %}
+        </div>
+        <form method="post" action="/admin/posts/{{ post.id }}/toggle-hide" class="inline-mini-form">
+          <input type="text" name="reason" placeholder="隐藏原因" value="违反社区规范">
+          <button class="btn {% if post.is_hidden %}btn-secondary{% else %}btn-danger{% endif %}" type="submit">{{ '恢复' if post.is_hidden else '隐藏' }}</button>
+        </form>
+      </div>
+      <p>{{ post.content }}</p>
+      <div class="comment-list">
+        {% for comment in post.comments %}
+          <div class="comment-item {% if comment.is_hidden %}hidden-item{% endif %}">
+            <div class="panel-header small-gap">
+              <div class="muted small">{{ comment.author.full_name }} · {{ comment.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+              <form method="post" action="/admin/comments/{{ comment.id }}/toggle-hide" class="inline-mini-form">
+                <input type="hidden" name="reason" value="评论违规">
+                <button class="btn {% if comment.is_hidden %}btn-secondary{% else %}btn-danger{% endif %}" type="submit">{{ '恢复' if comment.is_hidden else '隐藏' }}</button>
+              </form>
+            </div>
+            <div>{{ comment.content }}</div>
+            {% if comment.is_hidden %}<div class="tag tag-danger">已隐藏：{{ comment.hidden_reason }}</div>{% endif %}
+          </div>
+        {% else %}
+          <div class="muted">暂无评论。</div>
+        {% endfor %}
+      </div>
+    </article>
+  {% endfor %}
+</section>
+{% endblock %}

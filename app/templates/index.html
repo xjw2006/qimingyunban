@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="hero-card">
+  <div class="hero-left">
+    <div class="eyebrow">启明云伴 V2.3</div>
+    <h1>更像真实路演项目的商业策划平台</h1>
+    <p>这一版保留登录、策划案生成与导出，同时补上两块关键能力：一是“每一分都可解释”的加分制评分拆解，二是支持邮箱 + 中国大陆手机号验证码的注册与登录体系。</p>
+    <div class="hero-actions">
+      {% if current_user %}
+        <a class="btn btn-primary" href="/dashboard">进入策划案工作台</a>
+      {% else %}
+        <a class="btn btn-primary" href="/register">注册并开始使用</a>
+        <a class="btn btn-ghost" href="/login">已有账号，直接登录</a>
+      {% endif %}
+    </div>
+    <div class="chip-row">
+      <span class="chip">蓝白专业视觉</span>
+      <span class="chip">PPT / DOCX 一键导出</span>
+      <span class="chip">论坛举报与封禁</span>
+      <span class="chip">验证码注册登录</span>
+    </div>
+  </div>
+  <div class="hero-right">
+    <div class="metric-card big">
+      <div class="metric-label">当前引擎</div>
+      <div class="metric-value">{{ llm_mode|upper }}</div>
+      <div class="metric-note">默认 mock，可切换本地 Ollama</div>
+    </div>
+    <div class="metrics-grid two">
+      <div class="metric-card">
+        <div class="metric-label">验证码投递</div>
+        <div class="metric-value small">{{ verification_delivery }}</div>
+        <div class="metric-note">支持开发预览码</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">我的策划案</div>
+        <div class="metric-value small">{{ my_count }}</div>
+        <div class="metric-note">登录后即可生成与删除</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section-grid three">
+  <div class="card panel">
+    <h3>更细的评分说明</h3>
+    <p>策划案不再只给一个黑箱总分，而是按维度逐项加分：痛点定义、价值主张、市场空间、商业模式、执行计划、财务逻辑、风险控制、展示完成度。</p>
+  </div>
+  <div class="card panel">
+    <h3>更完整的注册制度</h3>
+    <p>注册时校验邮箱格式、中国大陆手机号格式，并要求双验证码通过。登录支持密码登录，也支持邮箱 / 手机验证码登录。</p>
+  </div>
+  <div class="card panel">
+    <h3>论坛治理继续保留</h3>
+    <p>保留举报、管理员隐藏、敏感词、黑名单、用户封禁等治理机制，并与新版账号体系一起运行。</p>
+  </div>
+</section>
+
+<section class="card panel">
+  <div class="panel-header">
+    <h2>最新论坛话题</h2>
+    <a href="/forum">进入论坛</a>
+  </div>
+  <div class="post-preview-list">
+    {% for post in latest_posts %}
+      <article class="post-preview">
+        <h4>{{ post.title }}</h4>
+        <p>{{ post.content }}</p>
+      </article>
+    {% else %}
+      <p class="muted">暂时还没有帖子。</p>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

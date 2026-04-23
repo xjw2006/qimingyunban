@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="dashboard-top">
+  <div>
+    <div class="eyebrow">论坛治理与交流区</div>
+    <h1>商赛论坛</h1>
+    <p class="muted">保留 v2.2 的举报、隐藏、敏感词、黑名单、用户封禁能力，并与新账号体系联动。</p>
+  </div>
+</section>
+
+{% if current_user %}
+<section class="card panel">
+  <h2>发布新帖子</h2>
+  <form method="post" action="/forum/post" class="form-grid">
+    <label>标题
+      <input type="text" name="title" placeholder="请输入帖子标题" required>
+    </label>
+    <label class="full-row">内容
+      <textarea name="content" rows="4" placeholder="请输入你的问题、经验或讨论内容" required></textarea>
+    </label>
+    <button class="btn btn-primary" type="submit">发布帖子</button>
+  </form>
+</section>
+{% endif %}
+
+<section class="forum-list">
+  {% for item in posts %}
+    <article class="card forum-card {% if item.post.is_hidden %}hidden-item{% endif %}">
+      <div class="panel-header">
+        <div>
+          <h2>{{ item.post.title }}</h2>
+          <div class="muted small">发布者：{{ item.post.author.full_name }} · {{ item.post.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+          {% if item.post.is_hidden %}
+            <div class="tag tag-danger">已隐藏：{{ item.post.hidden_reason }}</div>
+          {% endif %}
+        </div>
+        {% if current_user %}
+        <details class="report-box">
+          <summary>举报</summary>
+          <form method="post" action="/forum/report" class="form-grid compact-grid">
+            <input type="hidden" name="target_type" value="post">
+            <input type="hidden" name="target_id" value="{{ item.post.id }}">
+            <input type="text" name="reason" placeholder="举报原因，如广告/辱骂/违法" required>
+            <input type="text" name="detail" placeholder="补充说明（可选）">
+            <button class="btn btn-ghost" type="submit">提交举报</button>
+          </form>
+        </details>
+        {% endif %}
+      </div>
+      <p>{{ item.post.content }}</p>
+      <div class="comment-list">
+        {% for comment in item.comments %}
+          <div class="comment-item {% if comment.is_hidden %}hidden-item{% endif %}">
+            <div class="muted small">{{ comment.author.full_name }} · {{ comment.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+            <div>{{ comment.content }}</div>
+            {% if comment.is_hidden %}
+              <div class="tag tag-danger">评论已隐藏：{{ comment.hidden_reason }}</div>
+            {% endif %}
+            {% if current_user %}
+              <form method="post" action="/forum/report" class="inline-report-form">
+                <input type="hidden" name="target_type" value="comment">
+                <input type="hidden" name="target_id" value="{{ comment.id }}">
+                <input type="hidden" name="reason" value="不当评论">
+                <button class="link-btn" type="submit">举报评论</button>
+              </form>
+            {% endif %}
+          </div>
+        {% else %}
+          <div class="muted">暂无评论。</div>
+        {% endfor %}
+      </div>
+      {% if current_user %}
+      <form method="post" action="/forum/post/{{ item.post.id }}/comment" class="inline-comment-form">
+        <input type="text" name="content" placeholder="写下你的评论" required>
+        <button class="btn btn-secondary" type="submit">发表评论</button>
+      </form>
+      {% endif %}
+    </article>
+  {% else %}
+    <div class="card empty-state">
+      <h3>论坛还没有内容</h3>
+      <p>登录后发第一条帖子，测试举报和治理功能。</p>
+    </div>
+  {% endfor %}
+</section>
+{% endblock %}
