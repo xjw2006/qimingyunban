@@ -582,7 +582,7 @@ def evaluate_proposal(input_payload: dict[str, str], generated: dict[str, Any]) 
             input_payload.get("market", ""),
             input_payload.get("business_model", ""),
             generated.get("summary", ""),
-            " ".join(section.get("narrative", "") for section in generated.get("sections", [])),
+            " ".join(section.get("narrative", "") if isinstance(section, dict) else str(section) for section in generated.get("sections", []))
             " ".join(item.get("value", "") for item in generated.get("metric_cards", [])),
         ]
     )
