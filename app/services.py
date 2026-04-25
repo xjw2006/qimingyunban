@@ -573,19 +573,23 @@ SCORE_DIMENSIONS = [
 
 
 def evaluate_proposal(input_payload: dict[str, str], generated: dict[str, Any]) -> dict[str, Any]:
-    flat_text = " ".join(
-        [
-            input_payload.get("title", ""),
-            input_payload.get("industry", ""),
-            input_payload.get("problem", ""),
-            input_payload.get("solution", ""),
-            input_payload.get("market", ""),
-            input_payload.get("business_model", ""),
-            generated.get("summary", ""),
-            " ".join(section.get("narrative", "") if isinstance(section, dict) else str(section) for section in generated.get("sections", []))
-            " ".join(item.get("value", "") for item in generated.get("metric_cards", [])),
-        ]
-    )
+    flat_text = " ".join([
+        input_payload.get("title", ""),
+        input_payload.get("industry", ""),
+        input_payload.get("problem", ""),
+        input_payload.get("solution", ""),
+        input_payload.get("market", ""),
+        input_payload.get("business_model", ""),
+        generated.get("summary", ""),
+        " ".join(
+            section.get("narrative", "") if isinstance(section, dict) else str(section)
+            for section in generated.get("sections", [])
+        ),
+        " ".join(
+            item.get("value", "") if isinstance(item, dict) else str(item)
+            for item in generated.get("metric_cards", [])
+        ),
+    ])
     dimensions: list[dict[str, Any]] = []
     total = 0
     max_total = 0
