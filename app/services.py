@@ -53,7 +53,17 @@ def call_cloud_llm(prompt: str) -> str:
         response = requests.post(API_URL, headers=headers, json=data, timeout=60)
         response.raise_for_status()
         result = response.json()
-        return result["output"]["text"]
+        
+        # 关键：容错处理，防止API返回格式不对导致报错
+        output = result.get("output", {})
+        # 如果output是字典，取text字段；如果是字符串，直接用
+        if isinstance(output, dict):
+            text = output.get("text", "")
+        else:
+            text = str(output)
+        
+        # 强制转字符串，避免.strip()报错
+        return str(text).strip().replace("\n", "")
     except Exception as e:
         return f"API调用失败：{str(e)}"
 # =================================================================
