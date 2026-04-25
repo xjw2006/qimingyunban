@@ -25,7 +25,7 @@ class Settings:
     environment: str = os.getenv("APP_ENV", "local")
 
     # 数据库配置（项目运行必需，之前误删了）
-    database_url: str = os.getenv("DATABASE_URL", "sqlite:///./app_data/启明云伴.db")
+    database_url: str = os.getenv("DATABASE_URL", "sqlite:////tmp/app.db")
 
     # 服务配置
     host: str = os.getenv("HOST", "0.0.0.0")
